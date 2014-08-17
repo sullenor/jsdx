@@ -46,6 +46,7 @@ program
 
 program
     .command('*')
+    .description('shows help')
     .action(function () {
         program.outputHelp();
     });
