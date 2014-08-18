@@ -1,7 +1,7 @@
 {
   "name": "jsdx",
   "version": "0.3.0",
-  "description": "",
+  "description": "Генератор документации из js файликов",
   "bin": "./bin/cli.js",
   "main": "jsdx.js",
   "scripts": {
