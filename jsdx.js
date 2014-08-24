@@ -1,6 +1,9 @@
 'use strict';
 
 var files = require('./lib/files');
+var parseJs = require('./lib/parse-js');
+var parseAst = require('./lib/parse-ast');
+var utils = require('./lib/utils');
 var vow = require('vow');
 
 function name(pathName) {
@@ -21,7 +24,22 @@ module.exports = function (nodes) {
             .then(function (list) {
                 node.content = list;
                 ast.nodes.push(node);
-                return node;
+                return list;
+            })
+            .then(function (list) {
+                return vow.all(list.map(function (block) {
+                    if (!block.js) {
+                        return block;
+                    }
+
+                    return utils.readFile(block.js)
+                        .then(parseJs)
+                        .then(parseAst)
+                        .then(function (jsAst) {
+                            block.js = jsAst;
+                            return block;
+                        });
+                }));
             });
     }))
         .then(function () {
