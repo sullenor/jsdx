@@ -35,11 +35,11 @@ program
                     }));
             })
             .then(function (ast) {
-                console.log(ast);
+                console.log(JSON.stringify(ast, null, 4));
                 process.exit(0);
             })
             .catch(function (msg) {
-                console.error(msg);
+                console.error(msg.stack || msg);
                 process.exit(1);
             });
     });
