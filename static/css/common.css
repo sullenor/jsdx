@@ -1,0 +1,33 @@
+h2
+{
+    cursor: pointer;
+}
+
+h5
+{
+    margin-top: 20px;
+}
+
+ul.my-nav
+{
+    padding: 0;
+
+    list-style: none;
+}
+
+ul.my-nav a
+{
+    font-size: 18px;
+
+    display: block;
+
+    padding: 3px 0 3px 10px;
+}
+
+ul.my-nav a:hover
+{
+    text-decoration: none;
+
+    color: #555;
+    background: #e7e7e7;
+}
