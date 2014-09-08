@@ -1,5 +1,6 @@
 'use strict';
 
+var coverage = require('./lib/coverage');
 var files = require('./lib/files');
 var parseJs = require('./lib/parse-js');
 var parseAst = require('./lib/parse-ast');
@@ -38,11 +39,16 @@ module.exports = function (nodes) {
                         .then(function (jsAst) {
                             block.js = jsAst;
                             return block;
-                        });
+                        })
+                        .then(coverage.block);
                 }));
             });
     }))
         .then(function () {
+            return ast;
+        })
+        .then(function (ast) {
+            ast.nodes.forEach(coverage.total);
             return ast;
         });
 };
