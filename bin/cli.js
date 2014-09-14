@@ -7,6 +7,7 @@ program
     .version(pkg.version)
     .option('--config <path>', 'Specify path to the config file.')
     .option('-c, --coverage-only', 'Puts only the coverage report to the stdout.')
+    .option('-d, --destination <path>', 'Specify destination path for the html page. Works with --html.')
     .option('-h, --html', 'Builds html page with report.')
     .option('-r, --reporter', 'Formats the output.')
     .parse(process.argv);
@@ -31,6 +32,7 @@ if (!Array.isArray(config.levels) || config.levels.length === 0) {
 
 var jsdx = require('../index.js');
 var util = require('util');
+var utils = require('../lib/utils');
 
 jsdx(config.levels)
     .then(function (ast) {
@@ -51,16 +53,23 @@ jsdx(config.levels)
             console.log(JSON.stringify(ast, null, 4));
         }
     })
+    .then(process.exit.bind(process, 0))
     .catch(function (err) {
         console.log(err.stack || err);
+        process.exit(1);
     });
 
 function buildHtml(ast) {
-    var destPath = config.output;
+    var destPath = program.destination || config.output;
 
     if (typeof destPath === 'undefined') {
         throw new Error('I don\'t know where to put files.');
     }
 
-    destPath = path.resolve(destPath);
+    return utils.copy('./static', destPath)
+        .then(utils.write.bind(
+            null,
+            path.resolve(destPath, 'js', 'ast.js'),
+            'function provide(){return ' + JSON.stringify(ast) + ';};'
+        ));
 };
