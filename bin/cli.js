@@ -37,7 +37,18 @@ var jsdx = require('../index.js');
 
 jsdx(config.levels)
     .then(function (ast) {
-        if (!program.html) {
+        if (program.html) {
+            return;
+        }
+
+        if (program.coverageOnly) {
+            ast = ast.nodes.reduce(function (list, node) {
+                list[node.name] = node.coverage;
+                return list;
+            }, {});
+        }
+
+        if (program.reporter) {} else {
             console.log(JSON.stringify(ast, null, 4));
         }
     })
