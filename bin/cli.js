@@ -6,9 +6,9 @@ var pkg = require('../package.json');
 program
     .version(pkg.version)
     .option('--config <path>', 'Specify path to the config file.')
-    .option('--coverage-only', 'Puts only the coverage report to the stdout.')
-    .option('--html', 'Builds html page with report.')
-    .option('--reporter', 'Formats the output.')
+    .option('-c, --coverage-only', 'Puts only the coverage report to the stdout.')
+    .option('-h, --html', 'Builds html page with report.')
+    .option('-r, --reporter', 'Formats the output.')
     .parse(process.argv);
 
 var path = require('path');
@@ -26,19 +26,16 @@ if (program.args.length) {
 }
 
 if (!Array.isArray(config.levels) || config.levels.length === 0) {
-    var err = Error();
-    err.errno = 34;
-    err.code = 'ENOENT';
-    err.path = 'Nothing to parse';
-    throw err;
+    throw new Error('Nothing to parse');
 }
 
 var jsdx = require('../index.js');
+var util = require('util');
 
 jsdx(config.levels)
     .then(function (ast) {
         if (program.html) {
-            return;
+            return buildHtml(ast);
         }
 
         if (program.coverageOnly) {
@@ -48,10 +45,22 @@ jsdx(config.levels)
             }, {});
         }
 
-        if (program.reporter) {} else {
+        if (program.reporter) {
+            console.log(util.inspect(ast));
+        } else {
             console.log(JSON.stringify(ast, null, 4));
         }
     })
     .catch(function (err) {
         console.log(err.stack || err);
     });
+
+function buildHtml(ast) {
+    var destPath = config.output;
+
+    if (typeof destPath === 'undefined') {
+        throw new Error('I don\'t know where to put files.');
+    }
+
+    destPath = path.resolve(destPath);
+};
