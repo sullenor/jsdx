@@ -30,12 +30,16 @@ if (!Array.isArray(config.levels) || config.levels.length === 0) {
     throw new Error('Nothing to parse');
 }
 
+var _ = require('lodash');
 var jsdx = require('../index.js');
 var util = require('util');
 var utils = require('../lib/utils');
 
 jsdx(config.levels)
     .then(function (ast) {
+        ast = _.assign(ast, _.pick(config, ['description', 'name']));
+        ast = _.defaults(ast, {description: '', name: 'Документация по проекту'});
+
         if (program.html) {
             return buildHtml(ast);
         }
