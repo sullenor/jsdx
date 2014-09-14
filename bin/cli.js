@@ -1,58 +1,46 @@
-#!/usr/bin/env node
 'use strict';
 
-var pkg = require('../package.json');
 var program = require('commander');
+var pkg = require('../package.json');
 
 program
     .version(pkg.version)
-    .option('-c, --config <path>', 'specify config file');
+    .option('--config <path>', 'Specify path to the config file.')
+    .option('--coverage-only', 'Puts only the coverage report to the stdout.')
+    .option('--html', 'Builds html page with report.')
+    .option('--reporter', 'Formats the output.')
+    .parse(process.argv);
 
-program
-    .command('make')
-    .description('builds documentation')
-    .action(function () {
-        var _ = require('lodash');
-        var jsdx = require('../jsdx');
-        var path = require('path');
-        var utils = require('../lib/utils');
-        var vow = require('vow');
+var path = require('path');
+var configPath = path.resolve(program.config || './jsdx');
+var config;
 
-        var configPath = path.resolve(program.config || 'jsdx.json');
-        var projectPath = path.resolve('package.json');
-
-        utils.fileExists(configPath, true)
-            .then(function () {
-                var config = require(configPath);
-                return vow.all([jsdx(config.nodes), utils.fileExists(projectPath)])
-                    .then(utils.splat(function (ast, haspkg) {
-                        var project = {description: '', name: 'Документация по проекту'};
-                        if (haspkg) {
-                            project = _.assign(project, _.pick(require(projectPath)));
-                        }
-
-                        return _.assign(ast, project);
-                    }));
-            })
-            .then(function (ast) {
-                console.log(JSON.stringify(ast, null, 4));
-                process.exit(0);
-            })
-            .catch(function (msg) {
-                console.error(msg.stack || msg);
-                process.exit(1);
-            });
-    });
-
-program
-    .command('*')
-    .description('shows help')
-    .action(function () {
-        program.outputHelp();
-    });
-
-program.parse(process.argv);
-
-if (program.args.length === 0) {
-    program.outputHelp();
+try {
+    config = require(configPath);
+} catch (e) {
+    config = {};
 }
+
+if (program.args.length) {
+    config.levels = program.args;
+}
+
+if (!Array.isArray(config.levels) || config.levels.length === 0) {
+    var err = Error();
+    err.errno = 34;
+    err.code = 'ENOENT';
+    err.path = 'Nothing to parse';
+    throw err;
+}
+
+var jsdx = require('../index.js');
+
+jsdx(config.levels)
+    .then(function (ast) {
+        if (!program.html) {
+            console.log(JSON.stringify(ast, null, 4));
+        }
+    })
+    .catch(function (err) {
+        console.log(err.stack || err);
+    });
