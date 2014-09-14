@@ -29,6 +29,7 @@
   "dependencies": {
     "commander": "^2.3.0",
     "esprima": "^1.2.2",
+    "github-flavored-markdown": "^1.0.1",
     "lodash": "^2.4.1",
     "vow": "^0.4.5",
     "vow-fs": "^0.3.2"

@@ -2,8 +2,9 @@
 
 var coverage = require('./lib/coverage');
 var files = require('./lib/files');
-var parseJs = require('./lib/parse-js');
 var parseAst = require('./lib/parse-ast');
+var parseJs = require('./lib/parse-js');
+var parseMd = require('./lib/parse-md');
 var utils = require('./lib/utils');
 var vow = require('vow');
 
@@ -41,6 +42,20 @@ module.exports = function (nodes) {
                             return block;
                         })
                         .then(coverage.block);
+                }));
+            })
+            .then(function (list) {
+                return vow.all(list.map(function (block) {
+                    if (!block.md) {
+                        return block;
+                    }
+
+                    return utils.readFile(block.md)
+                        .then(parseMd)
+                        .then(function (html) {
+                            block.md = html;
+                            return block;
+                        });
                 }));
             });
     }))
