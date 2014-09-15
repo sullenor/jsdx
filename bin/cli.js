@@ -13,7 +13,7 @@ program
     .parse(process.argv);
 
 var path = require('path');
-var configPath = path.resolve(program.config || './jsdx');
+var configPath = program.config ? path.resolve(program.config) : path.resolve(process.cwd(), './jsdx');
 var config;
 
 try {
