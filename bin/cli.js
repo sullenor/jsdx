@@ -71,7 +71,7 @@ function buildHtml(ast) {
         throw new Error('I don\'t know where to put files.');
     }
 
-    return utils.copy('./static', destPath)
+    return utils.copy(path.resolve(__dirname, '../static'), destPath)
         .then(utils.write.bind(
             null,
             path.resolve(destPath, 'js', 'ast.js'),

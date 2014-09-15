@@ -5,6 +5,7 @@ var files = require('./lib/files');
 var parseAst = require('./lib/parse-ast');
 var parseJs = require('./lib/parse-js');
 var parseMd = require('./lib/parse-md');
+var path = require('path');
 var utils = require('./lib/utils');
 var vow = require('vow');
 
@@ -18,6 +19,9 @@ function name(pathName) {
  */
 module.exports = function (nodes) {
     Array.isArray(nodes) || (nodes = [nodes]);
+    nodes = nodes.map(function (node) {
+        return path.resolve(node);
+    });
     var ast = {nodes: []};
 
     return vow.all(nodes.map(function (nodePath) {
