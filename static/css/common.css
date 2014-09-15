@@ -31,3 +31,14 @@ ul.my-nav a:hover
     color: #555;
     background: #e7e7e7;
 }
+
+a.my-button
+{
+    font-size: 20px;
+    margin-right: 16px;
+}
+
+main
+{
+    padding-top: 24px;
+}
