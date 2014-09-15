@@ -73,7 +73,8 @@ function buildHtml(ast) {
 
     destPath = path.resolve(destPath);
 
-    return utils.copy(path.resolve(__dirname, '../static', '*'), destPath)
+    return utils.mkdir(destPath)
+        .then(utils.copy.bind(null, path.resolve(__dirname, '../static', '*'), destPath))
         .then(utils.write.bind(
             null,
             path.resolve(destPath, 'js', 'ast.js'),
