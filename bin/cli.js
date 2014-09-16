@@ -43,7 +43,7 @@ promise
  * @return {promise}
  */
 function loadConfig() {
-    var configName = 'jsdx';
+    var configName = '.jsdx';
     var configPath = path.resolve(program.config || process.cwd(), configName);
     var config;
 
