@@ -1,109 +1,119 @@
 'use strict';
 
+var format = require('util').format;
 var getBlocks = require('./lib/blocks');
 var path = require('path');
 var Promise = require('vow').Promise;
-var util = require('util');
+var utils = require('./lib/utils');
+
+var identity = utils.identity;
+var partial = utils.partial;
+var splat = utils.splat;
 
 /**
- * Сформирует список уровней с блоками и складывает их в astLevels.
- *
- * @param  {array}   astLevels Результирующий массив.
- * @param  {array}   levels    Список относительных путей.
+ * Преобразует уровни и подтягивает список блоков.
+ * 
+ * @param  {array}   levels
+ * @param  {array}   ast
+ * @param  {object}  config
  * @return {promise}
  */
-function buildLevels(astLevels, levels) {
-    return Promise.all(levels.map(function (level) {
-        level = {name: path.basename(level), path: path.resolve(level)};
+function build(levels, ast, config) {
+	return Promise.all(levels
+		.map(function (level) {
+			var node = {name: path.basename(level), path: path.resolve(level)};
+			ast.push(node);
 
-        return getBlocks(level.path)
-            .then(function (blocks) {
-                level.blocks = blocks;
-                astLevels.push(level);
+			return getBlocks(node.path, config)
+				.then(function (blocks) {
+					node.blocks = blocks;
 
-                return level;
-            });
-    }));
+					return node;
+				});
+		}))
+		.then(function (nodes) {
+			return [nodes, config];
+		});
 }
 
 /**
  * Натравливает технологии на блоки.
- *
- * @param  {array}   techs
- * @param  {array}   levels
+ * 
+ * @param  {array}   nodes
+ * @param  {object}  config
  * @return {promise}
  */
-function runTechs(techs, levels) {
-    return Promise.all(techs.map(loadTech))
-        .then(function (loadedTechs) {
-            return Promise.all(levels.map(function (level) {
-                return Promise.all(level.blocks
-                    .map(launchTechs.bind(null, loadedTechs))); // Плохо
-            }));
-        });
+function complete(nodes, config) {
+	return Promise.all(nodes.map(function (node) {
+		return Promise.all(node.blocks.map(function (block) {
+			return getTechs(config.techs)
+				.then(function (techs) {
+					return Promise.all(techs.map(function (tech) {
+						return tech(block, config);
+					}));
+				})
+				.then(partial(identity, block));
+		}));
+	}));
+}
+
+var techCache;
+
+/**
+ * Кэширует и возвращает список модулей.
+ * 
+ * @param  {array}   techs
+ * @return {promise}
+ */
+function getTechs(techs) {
+	return techCache ?
+		Promise.cast(techCache) :
+		(techCache = Promise.all(techs.map(loadTech)));
 }
 
 /**
- * Подгружает модуль с соответствующей технологией.
+ * Подгружает модуль для указанной технологии.
  *
  * @param  {string}  tech
  * @return {promise}
  */
-function loadTech(tech) {
-    return new Promise(function (resolve, reject) {
-        var modulePath = util.format('./lib/tech-%s', tech);
+function loadTech(techName) {
+	var modulePath = format('./lib/tech-%s', techName);
+	var tech;
 
-        try {
-            tech = require(modulePath);
-        } catch(e) {
-            return reject(util
-                .format('Sorry, can\'t find module "%s" for the "%s" tech.', path.basename(modulePath), tech));
-        }
+	return new Promise(function (resolve, reject) {
+		try {
+			tech = require(modulePath);
+		} catch(e) {
+			return reject(format(
+				'Can\'t find module "%s" for the "%s" tech.',
+				path.basename(modulePath),
+				techName
+			));
+		}
 
-        resolve(tech);
-    });
-}
-
-/**
- * Прогоняет указанные технологии для переданного блока.
- *
- * @param  {array}   techs Модули.
- * @param  {object}  block
- * @return {promise}
- */
-function launchTechs(techs, block) {
-    return Promise.all(techs.map(function (tech) {
-        return tech(block);
-    }));
+		resolve(tech);
+	});
 }
 
 /**
  * Собирает документацию по заданным уровням с блоками.
- *
+ * 
  * @param  {(string|string[])} levels
- * @return {promise}
+ * @param  {object}			   config
+ * @return {object}
  */
-module.exports = function (levels, options) {
-    Array.isArray(levels) ||
-        (levels = [levels]);
+module.exports = function (levels, config) {
+	config = config || {};
+	config.techs = config.techs || ['js', 'md'];
 
-    options = options || {};
+	if (!Array.isArray(levels)) {
+		levels = [levels];
+	}
 
-    Array.isArray(options.techs) ||
-        (options.techs = ['js', 'md']);
+	var ast = {levels: []};
 
-    var ast = {levels: []};
-
-    return buildLevels(ast.levels, levels)
-        .then(runTechs.bind(null, options.techs))
-        .then(function () {
-            return ast;
-        });
-
-    // Получаем список блоков по всем уровням
-    // Получаем список файлов для технологий
-    // Парсим файлы
-    // Возвращаем данные
-    //
-    // Хочется в рамках этого модуля иметь абстракную структуру
+	return build(levels, ast.levels, config)
+		.then(splat(complete))
+		.then(partial(identity, ast));
 };
