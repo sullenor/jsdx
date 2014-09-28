@@ -49,6 +49,12 @@ function loadConfig() {
     return config;
 }
 
+/**
+ * Расширяет конфиг.
+ *
+ * @param  {object} config
+ * @return {object}
+ */
 function extendConfig(config) {
     config.levels = program.args || config.levels || [];
     config.output = program.destination || config.output;
@@ -56,10 +62,22 @@ function extendConfig(config) {
     return config;
 }
 
+/**
+ * Обходит уровни, формирует синтаксическое дерево.
+ *
+ * @param  {object}  config
+ * @return {promise}
+ */
 function jsdx(config) {
     return require('../index')(config.levels, config);
 }
 
+/**
+ * Формирует отчет по покрытию кода документацией.
+ *
+ * @param  {object} ast
+ * @return {object}
+ */
 function getCoverage(ast) {
     return require('../lib/coverage')(ast);
 }
