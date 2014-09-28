@@ -12,7 +12,7 @@ var splat = utils.splat;
 
 /**
  * Преобразует уровни и подтягивает список блоков.
- * 
+ *
  * @param  {array}   levels
  * @param  {array}   ast
  * @param  {object}  config
@@ -38,7 +38,7 @@ function build(levels, ast, config) {
 
 /**
  * Натравливает технологии на блоки.
- * 
+ *
  * @param  {array}   nodes
  * @param  {object}  config
  * @return {promise}
@@ -61,7 +61,7 @@ var techCache;
 
 /**
  * Кэширует и возвращает список модулей.
- * 
+ *
  * @param  {array}   techs
  * @return {promise}
  */
@@ -98,7 +98,7 @@ function loadTech(techName) {
 
 /**
  * Собирает документацию по заданным уровням с блоками.
- * 
+ *
  * @param  {(string|string[])} levels
  * @param  {object}			   config
  * @return {object}

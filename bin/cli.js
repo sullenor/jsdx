@@ -19,38 +19,38 @@ var path = require('path');
 var Promise = require('vow').Promise;
 
 var promise = Promise.cast(loadConfig())
-	.then(extendConfig)
-	.then(jsdx);
+    .then(extendConfig)
+    .then(jsdx);
 
 promise
-	.then(logger.write)
-	.catch(logger.error);
+    .then(logger.write)
+    .catch(logger.error);
 
 /**
  * Подгружает конфиг.
- * 
+ *
  * @return {object}
  */
 function loadConfig() {
-	var configName = '.jsdx';
-	var configPath = path.resolve(program.config || process.cwd(), configName);
-	var config;
+    var configName = '.jsdx';
+    var configPath = path.resolve(program.config || process.cwd(), configName);
+    var config;
 
-	try {
-		config = require(configPath);
-	} catch(e) {
-		config = {};
-	}
+    try {
+        config = require(configPath);
+    } catch(e) {
+        config = {};
+    }
 
-	return config;
+    return config;
 }
 
 function extendConfig(config) {
-	config.levels = program.args || config.levels || [];
+    config.levels = program.args || config.levels || [];
 
-	return config;
+    return config;
 }
 
 function jsdx(config) {
-	return require('../index')(config.levels, config);
+    return require('../index')(config.levels, config);
 }
