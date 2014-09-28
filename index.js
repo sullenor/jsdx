@@ -19,21 +19,21 @@ var splat = utils.splat;
  * @return {promise}
  */
 function build(levels, ast, config) {
-	return Promise.all(levels
-		.map(function (level) {
-			var node = {name: path.basename(level), path: path.resolve(level)};
-			ast.push(node);
+    return Promise.all(levels
+        .map(function (level) {
+            var node = {name: path.basename(level), path: path.resolve(level)};
+            ast.push(node);
 
-			return getBlocks(node.path, config)
-				.then(function (blocks) {
-					node.blocks = blocks;
+            return getBlocks(node.path, config)
+                .then(function (blocks) {
+                    node.blocks = blocks;
 
-					return node;
-				});
-		}))
-		.then(function (nodes) {
-			return [nodes, config];
-		});
+                    return node;
+                });
+        }))
+        .then(function (nodes) {
+            return [nodes, config];
+        });
 }
 
 /**
@@ -44,17 +44,17 @@ function build(levels, ast, config) {
  * @return {promise}
  */
 function complete(nodes, config) {
-	return Promise.all(nodes.map(function (node) {
-		return Promise.all(node.blocks.map(function (block) {
-			return getTechs(config.techs)
-				.then(function (techs) {
-					return Promise.all(techs.map(function (tech) {
-						return tech(block, config);
-					}));
-				})
-				.then(partial(identity, block));
-		}));
-	}));
+    return Promise.all(nodes.map(function (node) {
+        return Promise.all(node.blocks.map(function (block) {
+            return getTechs(config.techs)
+                .then(function (techs) {
+                    return Promise.all(techs.map(function (tech) {
+                        return tech(block, config);
+                    }));
+                })
+                .then(partial(identity, block));
+        }));
+    }));
 }
 
 var techCache;
@@ -66,9 +66,9 @@ var techCache;
  * @return {promise}
  */
 function getTechs(techs) {
-	return techCache ?
-		Promise.cast(techCache) :
-		(techCache = Promise.all(techs.map(loadTech)));
+    return techCache ?
+        Promise.cast(techCache) :
+        (techCache = Promise.all(techs.map(loadTech)));
 }
 
 /**
@@ -78,42 +78,42 @@ function getTechs(techs) {
  * @return {promise}
  */
 function loadTech(techName) {
-	var modulePath = format('./lib/tech-%s', techName);
-	var tech;
+    var modulePath = format('./lib/tech-%s', techName);
+    var tech;
 
-	return new Promise(function (resolve, reject) {
-		try {
-			tech = require(modulePath);
-		} catch(e) {
-			return reject(format(
-				'Can\'t find module "%s" for the "%s" tech.',
-				path.basename(modulePath),
-				techName
-			));
-		}
+    return new Promise(function (resolve, reject) {
+        try {
+            tech = require(modulePath);
+        } catch(e) {
+            return reject(format(
+                'Can\'t find module "%s" for the "%s" tech.',
+                path.basename(modulePath),
+                techName
+            ));
+        }
 
-		resolve(tech);
-	});
+        resolve(tech);
+    });
 }
 
 /**
  * Собирает документацию по заданным уровням с блоками.
  *
  * @param  {(string|string[])} levels
- * @param  {object}			   config
+ * @param  {object}               config
  * @return {object}
  */
 module.exports = function (levels, config) {
-	config = config || {};
-	config.techs = config.techs || ['js', 'md'];
+    config = config || {};
+    config.techs = config.techs || ['js', 'md'];
 
-	if (!Array.isArray(levels)) {
-		levels = [levels];
-	}
+    if (!Array.isArray(levels)) {
+        levels = [levels];
+    }
 
-	var ast = {levels: []};
+    var ast = {levels: []};
 
-	return build(levels, ast.levels, config)
-		.then(splat(complete))
-		.then(partial(identity, ast));
+    return build(levels, ast.levels, config)
+        .then(splat(complete))
+        .then(partial(identity, ast));
 };
