@@ -8,8 +8,8 @@ program
     .version(pkg.version)
     .option('--config <path>', 'Specify the path to the config file')
     .option('-c, --coverage', 'Calculates the coverage of the blocks')
-    // .option('-d, --destination <path>', 'Specify the path to the report')
-    // .option('-h, --html', 'Creates a report on the result')
+    .option('-d, --destination <path>', 'Specify the path to the report')
+    .option('-h, --html', 'Creates a report on the result')
     // .option('-s, --silent')
     // .option('-r, --reporter', 'Formats the output')
     .parse(process.argv);
@@ -21,6 +21,10 @@ var Promise = require('vow').Promise;
 var promise = Promise.cast(loadConfig())
     .then(extendConfig)
     .then(jsdx);
+
+if (program.coverage) {
+    promise = promise.then(getCoverage);
+}
 
 promise
     .then(logger.write)
@@ -47,10 +51,15 @@ function loadConfig() {
 
 function extendConfig(config) {
     config.levels = program.args || config.levels || [];
+    config.output = program.destination || config.output;
 
     return config;
 }
 
 function jsdx(config) {
     return require('../index')(config.levels, config);
+}
+
+function getCoverage(ast) {
+    return require('../lib/coverage')(ast);
 }
