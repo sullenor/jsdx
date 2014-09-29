@@ -1,0 +1,53 @@
+*,
+*:after,
+*:before
+{
+    box-sizing: border-box;
+}
+
+body
+{
+    font-family: helvetica;
+    /*font-size: 13px;*/
+    line-height: 1.2;
+
+    display:         flex;
+    display: -webkit-flex;
+
+    max-width: 800px;
+    margin: 0 auto;
+
+    color: #251e20;
+    /*background: #e3e4e6;*/
+}
+
+header
+{
+    width: 100%;
+
+            order: 1;
+    -webkit-order: 1;
+}
+
+aside
+{
+    width: 200px;
+    padding: 10px;
+
+    text-align: right;
+}
+
+main
+{
+    padding: 10px;
+}
+
+h1
+{
+    font-size: 48px;
+}
+
+h2
+{
+    font-size: 18px;
+}
