@@ -8,6 +8,7 @@ program
     .version(pkg.version)
     .option('--config <path>', 'Specify the path to the config file')
     .option('-c, --coverage', 'Calculates the coverage of the blocks')
+    .option('-o, --coverage-only', 'Leaves only the coverage report')
     .option('-d, --destination <path>', 'Specify the path to the report')
     .option('-h, --html', 'Creates a report on the result')
     // .option('-s, --silent')
@@ -24,6 +25,10 @@ var promise = Promise.cast(loadConfig())
 
 if (program.coverage) {
     promise = promise.then(getCoverage);
+}
+
+if (program.coverageOnly) {
+    promise = promise.then(leaveOnlyCoverage);
 }
 
 promise
@@ -80,4 +85,13 @@ function jsdx(config) {
  */
 function getCoverage(ast) {
     return require('../lib/coverage')(ast);
+}
+
+/**
+ * Оставляет только отчет по покрытию.
+ *
+ * @return {object}
+ */
+function leaveOnlyCoverage(ast) {
+    return require('../lib/coverage-only')(ast);
 }
