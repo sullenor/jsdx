@@ -100,7 +100,7 @@ function loadTech(techName) {
  * Собирает документацию по заданным уровням с блоками.
  *
  * @param  {(string|string[])} levels
- * @param  {object}               config
+ * @param  {object}            config
  * @return {object}
  */
 module.exports = function (levels, config) {
@@ -115,5 +115,5 @@ module.exports = function (levels, config) {
 
     return build(levels, ast.levels, config)
         .then(splat(complete))
-        .then(partial(identity, ast));
+        .then(partial(identity, [ast, config]));
 };

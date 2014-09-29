@@ -19,20 +19,31 @@ var logger = require('../lib/logger');
 var path = require('path');
 var Promise = require('vow').Promise;
 
+var splat = require('../lib/utils').splat;
+
+// Противный хак!
+var config;
+
 var promise = Promise.cast(loadConfig())
     .then(extendConfig)
     .then(jsdx);
 
 if (program.coverage) {
-    promise = promise.then(getCoverage);
+    promise = promise.then(splat(getCoverage));
 }
 
-if (program.coverageOnly) {
-    promise = promise.then(leaveOnlyCoverage);
+if (program.html) {
+    promise = promise.then(splat(buildHtml));
+} else {
+    if (program.coverageOnly) {
+        promise = promise.then(splat(leaveOnlyCoverage));
+    }
+
+    promise = promise
+        .then(splat(logger.write));
 }
 
 promise
-    .then(logger.write)
     .catch(logger.error);
 
 /**
@@ -43,7 +54,7 @@ promise
 function loadConfig() {
     var configName = '.jsdx';
     var configPath = path.resolve(program.config || process.cwd(), configName);
-    var config;
+    // var config;
 
     try {
         config = require(configPath);
@@ -63,6 +74,11 @@ function loadConfig() {
 function extendConfig(config) {
     config.levels = program.args || config.levels || [];
     config.output = program.destination || config.output;
+    config.source = path.resolve(__dirname, '../static', '*');
+
+    if (config.output) {
+        config.output = path.resolve(config.output);
+    }
 
     return config;
 }
@@ -75,6 +91,10 @@ function extendConfig(config) {
  */
 function jsdx(config) {
     return require('../index')(config.levels, config);
+}
+
+function buildHtml(ast) {
+    return require('../lib/html')(ast, config);
 }
 
 /**
