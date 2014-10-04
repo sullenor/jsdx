@@ -7,34 +7,31 @@
 
 body
 {
-    font-family: helvetica;
-    /*font-size: 13px;*/
-    line-height: 1.2;
-
-    display:         flex;
-    display: -webkit-flex;
-
-    max-width: 800px;
+    width: 800px;
     margin: 0 auto;
-
-    color: #251e20;
-    /*background: #e3e4e6;*/
 }
 
-header
+body:after
 {
-    width: 100%;
+    display: block;
+    clear: both;
 
-            order: 1;
-    -webkit-order: 1;
+    content: '';
 }
 
 aside
 {
+    float: left;
+
     width: 200px;
     padding: 10px;
 
     text-align: right;
+}
+
+nav
+{
+    padding: 10px;
 }
 
 main
@@ -42,12 +39,25 @@ main
     padding: 10px;
 }
 
-h1
+section
 {
-    font-size: 48px;
+    float: left;
+
+    width: 600px;
 }
 
-h2
+.block
 {
-    font-size: 18px;
+    display: block;
+
+    cursor: pointer;
+}
+
+.tab
+{
+    margin-right: 10px;
+
+    cursor: pointer;
+
+    color: #428bca;
 }

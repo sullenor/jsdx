@@ -29,6 +29,8 @@
         model: LevelModel
     });
 
+
+
     /**
      * Полученное дерево
      *
@@ -36,22 +38,24 @@
      */
     var Ast = new Levels(provide().levels);
 
+
+
     /**
-     * Вьюха для блока. Отображается в качетве элемента бокового меню.
+     * Блок в списке меню
      *
-     * @return {object}
+     * @type {function}
      */
     var Block = Backbone.View.extend({
         tagName: 'a',
 
-        className: 'menu-item',
+        className: 'block',
 
         initialize: function () {
             this.render();
         },
 
         events: {
-            click: '_onClick'
+            click: '_onModelSelected'
         },
 
         render: function () {
@@ -64,44 +68,57 @@
             return this;
         },
 
-        _onClick: function () {
-            this.model.trigger('selected', this.model);
+        /**
+         * По клику пробрасывает модельку наверх до вьюхи App.
+         *
+         * @param {object} e
+         */
+        _onModelSelected: function (e) {
+            e.preventDefault();
+            this.model.trigger('selected', this.model)
         }
     });
 
-    var Nav = Backbone.View.extend({
-        tagName: 'nav',
+    /**
+     * Табик
+     *
+     * @type {function}
+     */
+    var Tab = Backbone.View.extend({
+        tagName: 'a',
 
-        initialize: function () {
+        className: 'tab',
+
+        initialize: function (type) {
+            this.type = type;
             this.render();
         },
 
         render: function () {
-            var model = this.model;
+            var name;
 
-            this.$el.empty();
-
-            if (!model) {
-                return this;
+            switch (this.type) {
+            case 'js':
+                name = 'JavaScript';
+                break;
+            case 'md':
+                name = 'Документация';
+                break;
             }
 
-            if (model.has('js')) {
-                this.$el.append('Описание');
-            }
-
-            if (model.has('md')) {
-                this.$el.append('JavaScript');
-            }
+            this.$el
+                .data('type', this.type)
+                .html(name);
 
             return this;
-        },
-
-        setModel: function (model) {
-            this.model = model;
-            this.render();
         }
     });
 
+    /**
+     * Общий каркас.
+     *
+     * @type {function}
+     */
     var App = Backbone.View.extend({
         el: 'body',
 
@@ -110,32 +127,78 @@
             this.render();
         },
 
-        render: function () {
-            console.time('Render');
-            this.$el.find('aside,main').remove();
+        events: {
+            'click .tab': '_onTabClick'
+        },
 
-            this.menu = $('<aside>');
-            this.main = $('<main>');
-            this.nav = new Nav();
+        render: function () {
+            this.$el.find('aside,section').remove();
+
+            var menu = this.menu = $('<aside></aside>');
+            var main = this.main = $('<main></main>');
+            var nav = this.nav = $('<nav></nav>');
+            var section = $('<section></section>').append(nav, main);
 
             Ast.models.forEach(function (level) {
-                this.menu.append('<h2>' + level.get('name') + '</h2>');
+                menu.append('<h4>' + level.get('name') + '</h4>');
 
-                if (level.blocks.models.length) {
-                    level.blocks.models.forEach(function (block) {
-                        this.menu.append(new Block({model: block}).$el);
-                    }, this);
-                }
-            }, this);
+                level.blocks.models.forEach(function (block) {
+                    menu.append(new Block({model: block}).el);
+                }, menu);
+            }, menu);
 
-            this.$el.prepend(this.menu, this.nav.$el, this.main);
-
-            console.timeEnd('Render');
+            this.$el.prepend(menu, section);
             return this;
         },
 
+        /**
+         * Обработчик выбора блока.
+         *
+         * @param  {object} model
+         */
         _onModelSelected: function (model) {
-            this.nav.setModel(model);
+            this._selectedModel = model;
+            this._updateNavigation();
+            return this;
+        },
+
+        /**
+         * Обработчик клика по табу.
+         *
+         * @param  {object} e
+         */
+        _onTabClick: function (e) {
+            var type = $(e.target).data('type');
+            var data = this._selectedModel.get(type);
+
+            e.preventDefault();
+
+            this.main.html(JSON.stringify(data));
+        },
+
+        /**
+         * Перерисовка навигации.
+         *
+         * @return {object}
+         */
+        _updateNavigation: function () {
+            var model = this._selectedModel;
+
+            this.nav.empty();
+
+            if (!model) {
+                return this;
+            }
+
+            if (model.has('md')) {
+                this.nav.append(new Tab('md').el);
+            }
+
+            if (model.has('js')) {
+                this.nav.append(new Tab('js').el);
+            }
+
+            return this;
         }
     });
 
