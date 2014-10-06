@@ -31,7 +31,7 @@ aside
 
 nav
 {
-    padding: 10px;
+    padding: 10px 10px 0;
 }
 
 main
@@ -60,4 +60,39 @@ section
     cursor: pointer;
 
     color: #428bca;
+}
+
+h2
+{
+    font-size: 130%;
+
+    margin: 0 0 11px 0;
+}
+
+h3
+{
+    font-size: 130%;
+
+    margin: 0 0 10px 0;
+}
+
+h4
+{
+    font-size: 125%;
+
+    margin: 0 0 10px 0;
+}
+
+h5
+{
+    font-size: 115%;
+
+    margin: 0 0 10px 0;
+}
+
+h6
+{
+    font-size: 105%;
+
+    margin: 0 0 10px 0;
 }

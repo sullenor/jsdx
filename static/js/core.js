@@ -142,7 +142,7 @@
             var section = $('<section></section>').append(nav, main);
 
             Ast.models.forEach(function (level) {
-                menu.append('<h4>' + level.get('name') + '</h4>');
+                menu.append(wrap('h2', level.get('name')));
 
                 level.blocks.models.forEach(function (block) {
                     menu.append(new Block({model: block}).el);
@@ -215,7 +215,7 @@
 
         var buf = [];
 
-        buf.push(wrap('h3', ast.block));
+        buf.push(wrap('h3', 'Блок ' + ast.block));
 
         if (ast.baseBlock) {
             buf.push('<p>Наследуется от блока <b>' + ast.baseBlock + '</b>.</p>');
@@ -248,7 +248,7 @@
                     buf.push(tag.tag);
                     buf.push(' ' + wrap('code', tag.types) + ' ');
                     if (tag.name) {
-                        buf.push(wrap('mark', tag.name) + ' ');
+                        buf.push(wrap('i', tag.name) + ' ');
                     }
                     tag.description && buf.push(tag.description);
                     buf.push('</li>');
@@ -261,7 +261,7 @@
                 method.args.forEach(function (arg) {
                     buf.push('<li>param');
                     buf.push(' ' + wrap('code', '*') + ' ');
-                    buf.push(wrap('mark', arg));
+                    buf.push(wrap('i', arg));
                     buf.push('</li>');
                 });
                 buf.push('</ul>');
@@ -277,7 +277,7 @@
         var buf = [];
 
         if (ast.description) {
-            buf.push(ast.description);
+            buf.push(downgradeHeaders(ast.description));
         }
 
         if (ast.mods) {
@@ -287,12 +287,12 @@
                 buf.push('<li>');
                 buf.push(mod.name);
                 if (mod.description) {
-                    buf.push(mod.description);
+                    buf.push(downgradeHeaders(mod.description));
                 }
                 if (mod.vals) {
                     buf.push('<ul>');
                     mod.vals.forEach(function (val) {
-                        buf.push('<li>' + val.name + '</li>');
+                        buf.push(wrap('li', val.name));
                     });
                     buf.push('</ul>');
                 }
@@ -308,7 +308,7 @@
                 buf.push('<li>');
                 buf.push(elem.name);
                 if (elem.description) {
-                    buf.push(elem.description);
+                    buf.push(downgradeHeaders(elem.description));
                 }
                 buf.push('</li>');
             });
@@ -316,6 +316,15 @@
         }
 
         return buf.join('');
+    }
+
+    function downgradeHeaders(string) {
+        return string
+            .replace(/(<\/?h)5([^>]*?>)/gi, '$16$2')
+            .replace(/(<\/?h)4([^>]*?>)/gi, '$16$2')
+            .replace(/(<\/?h)3([^>]*?>)/gi, '$15$2')
+            .replace(/(<\/?h)2([^>]*?>)/gi, '$14$2')
+            .replace(/(<\/?h)1([^>]*?>)/gi, '$13$2');
     }
 
     function wrap(tag, text) {
