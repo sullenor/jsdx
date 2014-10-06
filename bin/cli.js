@@ -2,82 +2,116 @@
 'use strict';
 
 var program = require('commander');
-var pkg = require('../package.json');
+var pkg = require('../package');
 
 program
     .version(pkg.version)
-    .option('--config <path>', 'Specify path to the config file.')
-    .option('-c, --coverage-only', 'Puts only the coverage report to the stdout.')
-    .option('-d, --destination <path>', 'Specify destination path for the html page. Works with --html.')
-    .option('-h, --html', 'Builds html page with report.')
-    .option('-r, --reporter', 'Formats the output.')
+    .option('--config <path>', 'Specify the path to the config file')
+    .option('-c, --coverage', 'Calculates the coverage of the blocks')
+    .option('-o, --coverage-only', 'Leaves only the coverage report')
+    .option('-d, --destination <path>', 'Specify the path to the report')
+    .option('-h, --html', 'Creates a report on the result')
+    // .option('-s, --silent')
+    // .option('-r, --reporter', 'Formats the output')
     .parse(process.argv);
 
+var logger = require('../lib/logger');
 var path = require('path');
-var configPath = program.config ? path.resolve(program.config) : path.resolve(process.cwd(), './jsdx');
+var Promise = require('vow').Promise;
+
+var splat = require('../lib/utils').splat;
+
+// Противный хак!
 var config;
 
-try {
-    config = require(configPath);
-} catch (e) {
-    config = {};
+var promise = Promise.cast(loadConfig())
+    .then(extendConfig)
+    .then(jsdx);
+
+if (program.coverage) {
+    promise = promise.then(splat(getCoverage));
 }
 
-if (program.args.length) {
-    config.levels = program.args;
-}
-
-if (!Array.isArray(config.levels) || config.levels.length === 0) {
-    throw new Error('Nothing to parse');
-}
-
-var _ = require('lodash');
-var jsdx = require('../index.js');
-var util = require('util');
-var utils = require('../lib/utils');
-
-jsdx(config.levels)
-    .then(function (ast) {
-        ast = _.assign(ast, _.pick(config, ['description', 'name']));
-        ast = _.defaults(ast, {description: '', name: 'Документация по проекту'});
-
-        if (program.html) {
-            return buildHtml(ast);
-        }
-
-        if (program.coverageOnly) {
-            ast = ast.nodes.reduce(function (list, node) {
-                list[node.name] = node.coverage;
-                return list;
-            }, {});
-        }
-
-        if (program.reporter) {
-            console.log(util.inspect(ast));
-        } else {
-            console.log(JSON.stringify(ast, null, 4));
-        }
-    })
-    .then(process.exit.bind(process, 0))
-    .catch(function (err) {
-        console.log(err.stack || err);
-        process.exit(1);
-    });
-
-function buildHtml(ast) {
-    var destPath = program.destination || config.output;
-
-    if (typeof destPath === 'undefined') {
-        throw new Error('I don\'t know where to put files.');
+if (program.html) {
+    promise = promise.then(splat(buildHtml));
+} else {
+    if (program.coverageOnly) {
+        promise = promise.then(splat(leaveOnlyCoverage));
     }
 
-    destPath = path.resolve(destPath);
+    promise = promise
+        .then(splat(logger.write));
+}
 
-    return utils.mkdir(destPath)
-        .then(utils.copy.bind(null, path.resolve(__dirname, '../static', '*'), destPath))
-        .then(utils.write.bind(
-            null,
-            path.resolve(destPath, 'js', 'ast.js'),
-            'function provide(){return ' + JSON.stringify(ast) + ';};'
-        ));
-};
+promise
+    .catch(logger.error);
+
+/**
+ * Подгружает конфиг.
+ *
+ * @return {object}
+ */
+function loadConfig() {
+    var configName = '.jsdx';
+    var configPath = path.resolve(program.config || process.cwd(), configName);
+    // var config;
+
+    try {
+        config = require(configPath);
+    } catch(e) {
+        config = {};
+    }
+
+    return config;
+}
+
+/**
+ * Расширяет конфиг.
+ *
+ * @param  {object} config
+ * @return {object}
+ */
+function extendConfig(config) {
+    config.levels = program.args || config.levels || [];
+    config.output = program.destination || config.output;
+    config.source = path.resolve(__dirname, '../static', '*');
+
+    if (config.output) {
+        config.output = path.resolve(config.output);
+    }
+
+    return config;
+}
+
+/**
+ * Обходит уровни, формирует синтаксическое дерево.
+ *
+ * @param  {object}  config
+ * @return {promise}
+ */
+function jsdx(config) {
+    return require('../index')(config.levels, config);
+}
+
+function buildHtml(ast) {
+    return require('../lib/html')(ast, config);
+}
+
+/**
+ * Формирует отчет по покрытию кода документацией.
+ *
+ * @param  {object} ast
+ * @return {object}
+ */
+function getCoverage(ast) {
+    return require('../lib/coverage')(ast);
+}
+
+/**
+ * Оставляет только отчет по покрытию.
+ *
+ * @return {object}
+ */
+function leaveOnlyCoverage(ast) {
+    return require('../lib/coverage-only')(ast);
+}
