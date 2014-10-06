@@ -215,63 +215,58 @@
 
         var buf = [];
 
-        buf.push('<h3>' + ast.block + '</h3>');
+        buf.push(wrap('h3', ast.block));
 
         if (ast.baseBlock) {
             buf.push('<p>Наследуется от блока <b>' + ast.baseBlock + '</b>.</p>');
         }
 
         if (ast.blockMethods.length) {
-            buf.push('<h4>Методы блока</h4>');
-            ast.blockMethods.forEach(function (method) {
-                buf.push('<h5>' + method.method + '()</h5>');
-                if (method.comment) {
-                    var comment = method.comment;
-                    if (comment.description) {
-                        buf.push('<p>' + comment.description + '</p>');
-                    }
-                    if (comment.tags.length) {
-                        buf.push('<ul>');
-                        comment.tags.forEach(function (tag) {
-                            buf.push('<li>');
-                            buf.push(tag.tag + ' ');
-                            buf.push('<code>' + tag.types + '</code>' + ' ');
-                            tag.name && buf.push(tag.name + ' ');
-                            tag.description && buf.push(tag.description);
-                            buf.push('</li>');
-                        });
-                        buf.push('</ul>');
-                    }
-                }
-            });
+            buf.push(wrap('h4', 'Методы блока'));
+            ast.blockMethods.forEach(processMethod.bind(null, buf));
         }
 
         if (ast.staticMethods.length) {
-            buf.push('<h4>Статические методы</h4>');
-            ast.staticMethods.forEach(function (method) {
-                buf.push('<h5>' + method.method + '()</h5>');
-                if (method.comment) {
-                    var comment = method.comment;
-                    if (comment.description) {
-                        buf.push('<p>' + comment.description + '</p>');
-                    }
-                    if (comment.tags.length) {
-                        buf.push('<ul>');
-                        comment.tags.forEach(function (tag) {
-                            buf.push('<li>');
-                            buf.push(tag.tag + ' ');
-                            buf.push('<code>' + tag.types + '</code>' + ' ');
-                            tag.name && buf.push(tag.name + ' ');
-                            tag.description && buf.push(tag.description);
-                            buf.push('</li>');
-                        });
-                        buf.push('</ul>');
-                    }
-                }
-            });
+            buf.push(wrap('h4', 'Статические методы'));
+            ast.staticMethods.forEach(processMethod.bind(null, buf));
         }
 
         return buf.join('');
+    }
+
+    function processMethod(buf, method) {
+        buf.push(wrap('h5', method.method + '()'));
+        if (method.comment) {
+            var comment = method.comment;
+            if (comment.description) {
+                buf.push(wrap('p', comment.description));
+            }
+            if (comment.tags.length) {
+                buf.push('<ul>');
+                comment.tags.forEach(function (tag) {
+                    buf.push('<li>');
+                    buf.push(tag.tag);
+                    buf.push(' ' + wrap('code', tag.types) + ' ');
+                    if (tag.name) {
+                        buf.push(wrap('mark', tag.name) + ' ');
+                    }
+                    tag.description && buf.push(tag.description);
+                    buf.push('</li>');
+                });
+                buf.push('</ul>');
+            }
+        } else {
+            if (method.args) {
+                buf.push('<ul>');
+                method.args.forEach(function (arg) {
+                    buf.push('<li>param');
+                    buf.push(' ' + wrap('code', '*') + ' ');
+                    buf.push(wrap('mark', arg));
+                    buf.push('</li>');
+                });
+                buf.push('</ul>');
+            }
+        }
     }
 
     function processMd(ast) {
@@ -309,5 +304,9 @@
         }
 
         return buf.join('');
+    }
+
+    function wrap(tag, text) {
+        return '<' + tag + '>' + text + '</' + tag + '>';
     }
 })();
