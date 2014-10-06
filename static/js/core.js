@@ -221,12 +221,12 @@
             buf.push('<p>Наследуется от блока <b>' + ast.baseBlock + '</b>.</p>');
         }
 
-        if (ast.blockMethods.length) {
+        if (Array.isArray(ast.blockMethods) && ast.blockMethods.length) {
             buf.push(wrap('h4', 'Методы блока'));
             ast.blockMethods.forEach(processMethod.bind(null, buf));
         }
 
-        if (ast.staticMethods.length) {
+        if (Array.isArray(ast.staticMethods) && ast.staticMethods.length) {
             buf.push(wrap('h4', 'Статические методы'));
             ast.staticMethods.forEach(processMethod.bind(null, buf));
         }
@@ -276,12 +276,19 @@
 
         var buf = [];
 
+        if (ast.description) {
+            buf.push(ast.description);
+        }
+
         if (ast.mods) {
             buf.push('<h4>Модификаторы блока</h4>');
             buf.push('<ul>');
             ast.mods.forEach(function (mod) {
                 buf.push('<li>');
                 buf.push(mod.name);
+                if (mod.description) {
+                    buf.push(mod.description);
+                }
                 if (mod.vals) {
                     buf.push('<ul>');
                     mod.vals.forEach(function (val) {
@@ -298,7 +305,12 @@
             buf.push('<h4>Элементы блока</h4>');
             buf.push('<ul>');
             ast.elems.forEach(function (elem) {
-                buf.push('<li>' + elem.name + '</li>');
+                buf.push('<li>');
+                buf.push(elem.name);
+                if (elem.description) {
+                    buf.push(elem.description);
+                }
+                buf.push('</li>');
             });
             buf.push('</ul>');
         }
