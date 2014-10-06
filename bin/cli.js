@@ -76,6 +76,10 @@ function extendConfig(config) {
     config.output = program.destination || config.output;
     config.source = path.resolve(__dirname, '../static', '*');
 
+    if (config.levels.length === 0) {
+        program.help();
+    }
+
     if (config.output) {
         config.output = path.resolve(config.output);
     }
