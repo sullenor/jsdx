@@ -31,6 +31,7 @@ aside
 
 nav
 {
+    min-height: 30px;
     padding: 10px 10px 0;
 }
 
