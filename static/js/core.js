@@ -215,7 +215,7 @@
 
         var buf = [];
 
-        buf.push(wrap('h3', 'Блок ' + ast.block));
+        buf.push(wrap('h3', ast.block));
 
         if (ast.baseBlock) {
             buf.push('<p>Наследуется от блока <b>' + ast.baseBlock + '</b>.</p>');
