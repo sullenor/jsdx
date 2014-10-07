@@ -246,11 +246,21 @@
                 comment.tags.forEach(function (tag) {
                     buf.push('<li>');
                     buf.push(tag.tag);
-                    buf.push(' ' + wrap('code', tag.types) + ' ');
-                    if (tag.name) {
-                        buf.push(wrap('i', tag.name) + ' ');
+                    if (Array.isArray(tag.types)) {
+                        if (tag.types.length) {
+                            tag.types.forEach(function (type) {
+                                buf.push(' ' + wrap('code', type));
+                            });
+                        } else {
+                            buf.push(' ' + wrap('code', '*'));
+                        }
                     }
-                    tag.description && buf.push(tag.description);
+                    if (tag.name) {
+                        buf.push(' ' + wrap('i', tag.name));
+                    }
+                    if (tag.description) {
+                        buf.push(' ' + tag.description);
+                    }
                     buf.push('</li>');
                 });
                 buf.push('</ul>');
