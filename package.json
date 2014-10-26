@@ -2,7 +2,10 @@
   "name": "jsdx",
   "version": "0.3.0",
   "description": "Генератор документации из js файликов",
-  "bin": "./bin/cli.js",
+  "bin": {
+    "jsdx": "./bin/cli.js",
+    "jsdx-js": "./bin/cov.js"
+  },
   "main": "index.js",
   "scripts": {
     "test": "node_modules/.bin/mocha --reporter nyan --ui bdd test"

@@ -117,25 +117,3 @@ module.exports = function (levels, config) {
         .then(splat(complete))
         .then(partial(identity, [ast, config]));
 };
-
-module.exports.parseFile = function (file) {
-    var fs = require('./lib/fs');
-    var parseAst = require('./lib/parse-ast');
-    var parseJs = require('./lib/parse-js');
-    var splat = require('./lib/utils').splat;
-    file = path.resolve(file);
-
-    return fs.isfile(file)
-        .then(function (isfile) {
-            if (!isfile) {
-                return null;
-            }
-
-            return fs.read(file)
-                .then(parseJs)
-                .then(splat(parseAst))
-                .then(splat(function (ast) {
-                    return ast;
-                }));
-        });
-};
