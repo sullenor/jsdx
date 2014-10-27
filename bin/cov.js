@@ -31,7 +31,7 @@ Promise.all(program.args.map(parseArg))
         }
     })
     .catch(function (err) {
-        console.log(err);
+        console.log(err.stack || err);
         process.exit(2);
     });
 
