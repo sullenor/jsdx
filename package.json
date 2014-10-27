@@ -4,7 +4,7 @@
   "description": "Генератор документации из js файликов",
   "bin": {
     "jsdx": "./bin/cli.js",
-    "jsdx-js": "./bin/cov.js"
+    "jsdx-lint": "./bin/cov.js"
   },
   "main": "index.js",
   "scripts": {
@@ -32,6 +32,7 @@
   "dependencies": {
     "commander": "^2.3.0",
     "esprima": "^1.2.2",
+    "jsdx-js": "git://github.com/sullenor/jsdx-js",
     "lodash": "^2.4.1",
     "marked": "^0.3.2",
     "vow": "^0.4.5",

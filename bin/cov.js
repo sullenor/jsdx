@@ -10,54 +10,49 @@ program
 
 var fs = require('../lib/fs');
 var path = require('path');
-var parseAst = require('../lib/parse-ast');
-var parseJs = require('../lib/parse-js');
 var Promise = require('vow').Promise;
-var utils = require('../lib/utils');
+
+var parseJs = require('jsdx-js');
 
 Promise.all(program.args.map(parseArg))
-    .then(function (covs) {
-        var errors = 0;
-
-        covs.forEach(function (cov, i) {
-            if (cov !== null && cov !== 1) {
-                errors++;
-                console.error(path.basename(program.args[i]) + ': write jsdocs for that file, please');
-            }
-        });
-
-        if (errors) {
-            process.exit(2);
-        }
-    })
+    .then(checkCoverage)
     .catch(function (err) {
-        console.log(err.stack || err);
-        process.exit(2);
+        console.error(err.stack || err);
+        process.exit(1);
     });
 
-function parseArg(arg) {
-    return fs.read(arg)
-        .then(parseFile);
+function parseArg(filePath) {
+    return fs.read(filePath)
+        .then(parseJs)
+        .then(getCoverage);
 }
 
-function parseFile(string) {
-    return Promise.cast(parseJs(string))
-        .then(utils.splat(parseAst))
-        .then(utils.splat(function (ast) {
-            return ast ?
-                getCoverage(ast) : null;
-        }));
-}
+function getCoverage(tree) {
+    if (!tree) {
+        return tree;
+    }
 
-function getCoverage(ast) {
-    var methods = [].concat(ast.blockMethods || [], ast.staticMethods || []);
+    var methods = [].concat(tree.instance || [], tree.klass || []);
     var covered = 0;
     var total = 0;
 
     methods.forEach(function (method) {
-        method.comment && covered++;
+        method.description && covered++;
         total++;
     });
 
     return Math.floor(covered / total);
+}
+
+function checkCoverage(reports) {
+    var errors = 0;
+
+    reports.forEach(function (report, i) {
+        if (report !== null && report !== 1) {
+            errors++;
+            console.error(path.basename(program.args[i]) + ': write jsdocs for that file, please');
+        }
+    });
+
+    process.exit(errors ? 2 : 0);
 }
