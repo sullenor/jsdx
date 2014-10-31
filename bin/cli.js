@@ -12,7 +12,7 @@ program
     .option('-d, --destination <path>', 'Specify the path to the report')
     .option('-h, --html', 'Creates a report on the result')
     // .option('-s, --silent')
-    // .option('-r, --reporter', 'Formats the output')
+    .option('-r, --reporter', 'Formats the output')
     .parse(process.argv);
 
 var logger = require('../lib/logger');
@@ -39,8 +39,11 @@ if (program.html) {
         promise = promise.then(splat(leaveOnlyCoverage));
     }
 
-    promise = promise
-        .then(splat(logger.write));
+    if (program.reporter) {
+        promise = promise.then(splat(require('../lib/reporter')));
+    } else {
+        promise = promise.then(splat(logger.write));
+    }
 }
 
 promise
