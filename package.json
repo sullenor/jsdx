@@ -3,8 +3,7 @@
   "version": "0.1.0",
   "description": "Генератор документации из js файликов",
   "bin": {
-    "jsdx": "./bin/cli.js",
-    "jsdx-lint": "./bin/cov.js"
+    "jsdx": "./bin/jsdx.js"
   },
   "main": "index.js",
   "scripts": {
