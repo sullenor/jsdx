@@ -2,8 +2,10 @@
 'use strict';
 
 var program = require('commander');
+var pkg = require('../package');
 
 program
+    .version(pkg.version)
     .option('-c, --coverage', '')
     .option('-h, --html <path>', '')
     .option('-m, --mask <pattern>', '')
