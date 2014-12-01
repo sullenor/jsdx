@@ -30,6 +30,7 @@
   "homepage": "https://github.com/sullenor/jsdx",
   "dependencies": {
     "commander": "^2.3.0",
+    "lodash": "^2.4.1",
     "marked": "^0.3.2"
   },
   "devDependencies": {
