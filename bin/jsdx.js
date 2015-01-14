@@ -17,3 +17,18 @@ program
 if (program.args.length === 0) {
   program.help();
 }
+
+var Tree = require('../lib/tree');
+
+var tree = new Tree(program.args);
+
+tree.once('done', checkForTechs);
+tree.read();
+
+function checkForTechs() {
+  tree.once('done', function () {
+    console.log(tree);
+  });
+  tree.getTechs('?.js', function () {});
+  tree.getTechs('README.md', function () {});
+}
