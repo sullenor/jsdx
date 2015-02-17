@@ -61,11 +61,24 @@
         },
 
         render: function () {
+            var cov = this.model.get('coverage');
             var name = this.model.get('name');
 
-            this.$el
-                .attr('href', '#' + name)
-                .html(name);
+            if (cov) {
+                this.$el
+                    .attr('data-js', cov.js[0] ? (cov.js[0] / cov.js[1]).toFixed(4) : 0)
+                    .attr('data-md', Boolean(cov.md[0]))
+                    .attr('href', '#' + name)
+                    .html(name);
+            } else {
+                this.$el
+                    .attr('href', '#' + name)
+                    .html(name);
+            }
+
+            if (!this.model.has('js') && !this.model.has('md')) {
+                this.$el.addClass('disabled');
+            }
 
             return this;
         },
@@ -77,7 +90,9 @@
          */
         _onModelSelected: function (e) {
             e.preventDefault();
-            this.model.trigger('selected', this.model)
+            if (this.model.has('js') || this.model.has('md')) {
+                this.model.trigger('selected', this.model);
+            }
         }
     });
 
@@ -142,7 +157,30 @@
             var section = $('<section></section>').append(nav, main);
 
             Ast.models.forEach(function (level) {
-                menu.append(wrap('h2', level.get('name')));
+                var header = $(wrap('h2', level.get('name')));
+
+                if (level.blocks && level.blocks.models && level.blocks.models[0].get('coverage')) {
+                    var total = level.blocks.models.reduce(function (cov, block) {
+                        var c = block.get('coverage');
+
+                        cov.js[0] += c.js[0];
+                        cov.js[1] += c.js[1];
+                        cov.md[0] += c.md[0];
+                        cov.md[1] += c.md[1];
+
+                        return cov;
+                    }, {js: [0, 0], md: [0, 0]});
+
+                    var js = total.js[0] ? (total.js[0] / total.js[1]).toFixed(4) : 0;
+                    var md = total.md[0] ? (total.md[0] / total.md[1]).toFixed(4) : 0;
+
+                    header
+                        .attr('data-js', js)
+                        .attr('data-md', md)
+                        .append('<div class="report">js: ' + js * 100 + '%; md: ' + md * 100 + '%</div>');
+                }
+
+                menu.append(header);
 
                 level.blocks.models.forEach(function (block) {
                     menu.append(new Block({model: block}).el);

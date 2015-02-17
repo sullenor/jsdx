@@ -42,9 +42,13 @@ main
 
 section
 {
+    position: fixed;
+    left: auto;
+
     float: left;
 
     width: 600px;
+    margin-left: 200px;
 }
 
 .block
@@ -52,6 +56,13 @@ section
     display: block;
 
     cursor: pointer;
+}
+
+.block.disabled
+{
+    cursor: help;
+
+    color: #999;
 }
 
 .tab
@@ -98,4 +109,10 @@ h6
     font-size: 105%;
 
     margin: 0 0 10px 0;
+}
+
+h2 .report
+{
+    font-size: 90%;
+    font-weight: 100;
 }
