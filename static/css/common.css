@@ -5,34 +5,42 @@
     box-sizing: border-box;
 }
 
-body
+html
 {
-    width: 800px;
-    margin: 0 auto;
+    height: 100%;
 }
 
-body:after
+body
 {
-    display: block;
-    clear: both;
+    position: relative;
 
-    content: '';
+    width: 800px;
+    height: 100%;
+    margin: 0 auto;
 }
 
 aside
 {
-    float: left;
-
     width: 200px;
     padding: 10px;
 
     text-align: right;
+
+            flex: 0 0 200px;
+    -webkit-flex: 0 0 200px;
 }
 
 nav
 {
+    position:         sticky;
+    position: -webkit-sticky;
+    top: 0;
+
+    width: 100%;
     min-height: 30px;
     padding: 10px 10px 0;
+
+    background: #fff;
 }
 
 main
@@ -43,11 +51,12 @@ main
 section
 {
     position: fixed;
-    left: auto;
+    top: 0;
 
-    float: left;
+    overflow-y: auto;
 
     width: 600px;
+    height: 100%;
     margin-left: 200px;
 }
 
